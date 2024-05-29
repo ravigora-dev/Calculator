@@ -1,5 +1,6 @@
 package com.example.calculator
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,8 @@ fun CalculatorApp() {
     var operation by remember { mutableStateOf("") }
     var result by remember { mutableStateOf(0.0) }
     var isResultDisplayed by remember { mutableStateOf(false) }
+    val configuration = LocalConfiguration.current
+    val isPortait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     val buttons = listOf(
         CalculatorButtonData("AC", ButtonType.FUNCTION),
@@ -84,116 +88,136 @@ fun CalculatorApp() {
         CalculatorButtonData("=", ButtonType.OPERATION)
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF282C34))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Calculator",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Box(
+    if (isPortait){
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .background(Color(0xFF282C34))
                 .padding(16.dp)
-                .background(Color(0xFF282C34), shape = MaterialTheme.shapes.small)
-                .height(290.dp)
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
         ) {
             Text(
-                text = display,
-                fontSize = if (display.length > 12) 24.sp else 48.sp,
+                text = "Calculator",
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                textAlign = TextAlign.End
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            buttons.chunked(4).forEach { row ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    row.forEach { button ->
-                        CalculatorButton(button) {
-                            when (button.label) {
-                                "AC" -> {
-                                    display = "0"
-                                    currentNumber = ""
-                                    operation = ""
-                                    result = 0.0
-                                    isResultDisplayed = false
-                                }
-                                "DEL" -> {
-                                    if (currentNumber.isNotEmpty()) {
-                                        currentNumber = currentNumber.dropLast(1)
-                                        display = if (currentNumber.isEmpty()) "0" else currentNumber
-                                    }
-                                }
-                                "=" -> {
-                                    if (operation.isNotEmpty() && currentNumber.isNotEmpty()) {
-                                        val secondOperand = currentNumber.toDouble()
-                                        result = when (operation) {
-                                            "+" -> result + secondOperand
-                                            "-" -> result - secondOperand
-                                            "*" -> result * secondOperand
-                                            "/" -> result / secondOperand
-                                            "%" -> result % secondOperand
-                                            else -> result
-                                        }
-                                        display = if (result % 1 == 0.0) {
-                                            result.toInt().toString()
-                                        } else {
-                                            result.toString()
-                                        }
-                                        currentNumber = display
-                                        operation = ""
-                                        isResultDisplayed = true
-                                    }
-                                }
-                                "+", "-", "*", "/" -> {
-                                    if (currentNumber.isNotEmpty()) {
-                                        result = currentNumber.toDouble()
-                                        operation = button.label
+            Spacer(modifier = Modifier.height(24.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(Color(0xFF282C34), shape = MaterialTheme.shapes.small)
+                    .height(290.dp)
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                Text(
+                    text = display,
+                    fontSize = if (display.length > 12) 24.sp else 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.End
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                buttons.chunked(4).forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        row.forEach { button ->
+                            CalculatorButton(button, isPortait) {
+                                when (button.label) {
+                                    "AC" -> {
+                                        display = "0"
                                         currentNumber = ""
-                                        display = button.label
+                                        operation = ""
+                                        result = 0.0
                                         isResultDisplayed = false
                                     }
-                                }
-                                "±" -> {
-                                    if (currentNumber.isNotEmpty()) {
-                                        val integerNumber = currentNumber.toIntOrNull()
-                                        if (integerNumber != null) {
-                                            currentNumber = (-integerNumber).toString()
-                                            display = currentNumber
-                                        } else {
-                                            val number = currentNumber.toDouble()
-                                            currentNumber = (-number).toString()
+                                    "DEL" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            currentNumber = currentNumber.dropLast(1)
+                                            display = if (currentNumber.isEmpty()) "0" else currentNumber
+                                        }
+                                    }
+                                    "=" -> {
+                                        if (operation.isNotEmpty() && currentNumber.isNotEmpty()) {
+                                            val secondOperand = currentNumber.toDouble()
+                                            result = when (operation) {
+                                                "+" -> result + secondOperand
+                                                "-" -> result - secondOperand
+                                                "*" -> result * secondOperand
+                                                "/" -> result / secondOperand
+                                                "%" -> result % secondOperand
+                                                else -> result
+                                            }
+                                            display = if (result % 1 == 0.0) {
+                                                result.toInt().toString()
+                                            } else {
+                                                result.toString()
+                                            }
+                                            currentNumber = display
+                                            operation = ""
+                                            isResultDisplayed = true
+                                        }
+                                    }
+                                    "+", "-", "*", "/" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            result = currentNumber.toDouble()
+                                            operation = button.label
+                                            currentNumber = ""
+                                            display = button.label
+                                            isResultDisplayed = false
+                                        }
+                                    }
+                                    "±" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            val integerNumber = currentNumber.toIntOrNull()
+                                            if (integerNumber != null) {
+                                                currentNumber = (-integerNumber).toString()
+                                                display = currentNumber
+                                            } else {
+                                                val number = currentNumber.toDouble()
+                                                currentNumber = (-number).toString()
+                                                display = currentNumber
+                                            }
+                                        }
+                                    }
+                                    "00" -> {
+                                        if (currentNumber != "" || result != 0.0) {
+                                            currentNumber += button.label
                                             display = currentNumber
                                         }
                                     }
-                                }
-                                else -> {
-                                    if (isResultDisplayed) {
-                                        currentNumber = button.label
-                                        display = currentNumber
-                                        isResultDisplayed = false
-                                    } else {
-                                        currentNumber += button.label
-                                        display = currentNumber
+                                    "0" -> {
+                                        if (currentNumber != "" || result != 0.0) {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                    "." -> {
+                                        if (!currentNumber.contains(".")) {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                    else -> {
+                                        if (isResultDisplayed) {
+                                            currentNumber = button.label
+                                            display = currentNumber
+                                            isResultDisplayed = false
+                                        } else {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
                                     }
                                 }
                             }
@@ -203,14 +227,161 @@ fun CalculatorApp() {
             }
         }
     }
+    else {
+        Row(modifier = Modifier
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Calculator",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .background(Color(0xFF282C34), shape = MaterialTheme.shapes.small)
+                        .height(290.dp)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    Text(
+                        text = display,
+                        fontSize = if (display.length > 12) 24.sp else 48.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.End
+                    )
+                }
+
+
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                buttons.chunked(4).forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(30.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        row.forEach{button ->
+                            CalculatorButton(button, isPortait) {
+                                when (button.label) {
+                                    "AC" -> {
+                                        display = "0"
+                                        currentNumber = ""
+                                        operation = ""
+                                        result = 0.0
+                                        isResultDisplayed = false
+                                    }
+                                    "DEL" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            currentNumber = currentNumber.dropLast(1)
+                                            display = if (currentNumber.isEmpty()) "0" else currentNumber
+                                        }
+                                    }
+                                    "=" -> {
+                                        if (operation.isNotEmpty() && currentNumber.isNotEmpty()) {
+                                            val secondOperand = currentNumber.toDouble()
+                                            result = when (operation) {
+                                                "+" -> result + secondOperand
+                                                "-" -> result - secondOperand
+                                                "*" -> result * secondOperand
+                                                "/" -> result / secondOperand
+                                                "%" -> result % secondOperand
+                                                else -> result
+                                            }
+                                            display = if (result % 1 == 0.0) {
+                                                result.toInt().toString()
+                                            } else {
+                                                result.toString()
+                                            }
+                                            currentNumber = display
+                                            operation = ""
+                                            isResultDisplayed = true
+                                        }
+                                    }
+                                    "+", "-", "*", "/" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            result = currentNumber.toDouble()
+                                            operation = button.label
+                                            currentNumber = ""
+                                            display = button.label
+                                            isResultDisplayed = false
+                                        }
+                                    }
+                                    "±" -> {
+                                        if (currentNumber.isNotEmpty()) {
+                                            val integerNumber = currentNumber.toIntOrNull()
+                                            if (integerNumber != null) {
+                                                currentNumber = (-integerNumber).toString()
+                                                display = currentNumber
+                                            } else {
+                                                val number = currentNumber.toDouble()
+                                                currentNumber = (-number).toString()
+                                                display = currentNumber
+                                            }
+                                        }
+                                    }
+                                    "00" -> {
+                                        if (currentNumber != "" || result != 0.0) {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                    "0" -> {
+                                        if (currentNumber != "" || result != 0.0) {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                    "." -> {
+                                        if (!currentNumber.contains(".")) {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                    else -> {
+                                        if (isResultDisplayed) {
+                                            currentNumber = button.label
+                                            display = currentNumber
+                                            isResultDisplayed = false
+                                        } else {
+                                            currentNumber += button.label
+                                            display = currentNumber
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
 }
 
 @Composable
-fun CalculatorButton(buttonData: CalculatorButtonData, onClick: () -> Unit) {
+fun CalculatorButton(buttonData: CalculatorButtonData, isPortrait: Boolean, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
-            .size(80.dp)
+            .size(if (isPortrait) 80.dp else 70.dp)
             .background(
                 Color(0xFF44475A),
                 shape = CircleShape
@@ -224,7 +395,7 @@ fun CalculatorButton(buttonData: CalculatorButtonData, onClick: () -> Unit) {
     ) {
         Text(
             text = buttonData.label,
-            fontSize = 24.sp,
+            fontSize = if (buttonData.label.length > 1) if (buttonData.label.length > 2 && !isPortrait) 12.sp else 16.sp else 24.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
