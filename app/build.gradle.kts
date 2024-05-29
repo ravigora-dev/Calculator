@@ -69,4 +69,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
+    implementation("androidx.compose.runtime:runtime-livedata")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.2-alpha")
 }
